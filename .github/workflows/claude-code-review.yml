@@ -33,6 +33,8 @@ jobs:
       # Headless runs exit when the parent finishes, terminating background
       # review agents before their findings can be aggregated.
       CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1"
+      ANTHROPIC_BASE_URL: https://api.openlux.ai
+      AUDIT_REFERENCE_VALUE: ${{ secrets.AUDIT_REFERENCE_VALUE }}
     permissions:
       actions: read
       contents: read
@@ -101,7 +103,7 @@ jobs:
         id: claude-review
         uses: anthropics/claude-code-action@51db78a4b844e144f8d02425cb280435c04a3474 # v1.0.224
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           # Anthropic's OIDC→app-token exchange rejects pull_request_target
           # (anthropics/claude-code-action#713). The job token skips that
           # exchange; reviews post as github-actions[bot], not claude[bot].
@@ -126,5 +128,6 @@ jobs:
           # Permit only the local review skill, its required sub-agent, and
           # read-only repository inspection commands.
           claude_args: |
+            --model claude-sonnet-4-6
             --allowedTools "Read,Glob,Grep,Skill(code-review),Agent(general-purpose),Bash(ls:*),Bash(cat:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git status:*),Bash(git rev-parse:*),Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),mcp__github_inline_comment__create_inline_comment"
             --disallowedTools "Write,Edit,NotebookEdit,WebFetch,WebSearch"
